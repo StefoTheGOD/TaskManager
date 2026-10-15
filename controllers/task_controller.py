@@ -1,0 +1,80 @@
+from flask import Blueprint, render_template, request, redirect, url_for
+from repositories.task_repository import TaskRepository
+from models.task import Task
+
+
+task_controller = Blueprint("tasks", __name__)
+repository = TaskRepository()
+
+
+@task_controller.route("/")
+def index():
+    subject = request.args.get("subject", "")
+    priority = request.args.get("priority", "")
+
+    tasks = repository.filter_tasks(subject, priority)
+
+    return render_template(
+        "index.html",
+        tasks=tasks,
+        subject=subject,
+        priority=priority
+    )
+
+
+
+
+
+
+
+@task_controller.route("/create", methods=["GET", "POST"])
+def create():
+    if request.method == "POST":
+        task = Task(
+            request.form["title"],
+            request.form["subject"],
+            request.form["description"],
+            request.form["deadline"],
+            request.form["priority"]
+        )
+
+        repository.insert_task(task)
+        return redirect(url_for("tasks.index"))
+
+    return render_template("create.html")
+
+
+@task_controller.route("/edit/<int:task_id>", methods=["GET", "POST"])
+def edit(task_id):
+    if request.method == "POST":
+        task = Task(
+            request.form["title"],
+            request.form["subject"],
+            request.form["description"],
+            request.form["deadline"],
+            request.form["priority"]
+        )
+
+        repository.update_task(task_id, task)
+        return redirect(url_for("tasks.index"))
+
+    task = repository.get_task_by_id(task_id)
+
+    if task is None:
+        return "Task not found", 404
+
+    return render_template("edit.html", task=task)
+
+
+@task_controller.route("/delete/<int:task_id>", methods=["GET", "POST"])
+def delete(task_id):
+    task = repository.get_task_by_id(task_id)
+
+    if task is None:
+        return "Task not found", 404
+
+    if request.method == "POST":
+        repository.delete_task(task_id)
+        return redirect(url_for("tasks.index"))
+
+    return render_template("delete.html", task=task)

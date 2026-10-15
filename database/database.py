@@ -13,7 +13,10 @@ class Database:
 
     def __init__(self):
         if not hasattr(self, "connection"):
-            self.connection = sqlite3.connect("../student_planner.db")
+            self.connection = sqlite3.connect(
+                "student_planner.db",
+                check_same_thread=False
+            )
 
     def create_table(self):
         cursor = self.connection.cursor()

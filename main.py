@@ -1,57 +1,18 @@
-from Database.database import Database1
-from Models.task import Task
+from flask import Flask
+from database.database import Database
+from controllers.task_controller import task_controller
 
 
+app = Flask(__name__)
+
+# Initialize database
 db = Database()
 db.create_table()
 
-print("=== AI STUDENT PLANNER ===")
-print("1. Add task")
-print("2. Search by subject")
-print("3. Search by priority")
+# Register MVC controller
+app.register_blueprint(task_controller)
 
-choice = input("Choose option: ")
 
-if choice == "1":
-    title = input("Title: ")
-    subject = input("Subject: ")
-    description = input("Description: ")
-    deadline = input("Deadline (YYYY-MM-DD): ")
-    priority = input("Priority (Low/Medium/High): ")
-
-    task = Task(
-        title,
-        subject,
-        description,
-        deadline,
-        priority
-    )
-
-    db.insert_task(task)
-
-    print("Task added successfully!")
-
-elif choice == "2":
-    subject = input("Enter subject: ")
-
-    tasks = db.select_tasks_by_subject(subject)
-
-    print("\n=== RESULTS ===")
-
-    for task in tasks:
-        print(task)
-
-elif choice == "3":
-    priority = input("Enter priority (Low/Medium/High): ")
-
-    tasks = db.select_tasks_by_priority(priority)
-
-    print("\n=== RESULTS ===")
-
-    for task in tasks:
-        print(task)
-
-else:
-    print("Invalid option.")
-
+if __name__ == "__main__":
+    app.run(debug=True)
 
