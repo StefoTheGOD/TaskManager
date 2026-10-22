@@ -78,3 +78,13 @@ def delete(task_id):
         return redirect(url_for("tasks.index"))
 
     return render_template("delete.html", task=task)
+
+@task_controller.route("/details/<int:task_id>")
+def details(task_id):
+    task = repository.get_task_by_id(task_id)
+
+    if task is None:
+        return "Task not found", 404
+
+    return render_template("details.html", task=task)
+

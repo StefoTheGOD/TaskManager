@@ -1,117 +1,218 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskManager - My Tasks</title>
+    <title>TaskManager - Dashboard</title>
 
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}"
           rel="stylesheet">
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
+<div class="container py-5">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>My Tasks</h1>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="mb-0">My Workspace</h1>
+            <p class="page-subtitle mb-0">
+                Organize your studies and stay on track.
+            </p>
+        </div>
 
-        <a href="{{ url_for('tasks.create') }}" class="btn btn-primary">
-            + Add Task
-        </a>
-    </div>
-    <form method="GET" action="{{ url_for('tasks.index') }}"
-      class="row g-3 mb-4">
-
-    <div class="col-md-5">
-        <input type="text"
-               name="subject"
-               class="form-control"
-               placeholder="Search by subject"
-               value="{{ subject }}">
-    </div>
-
-    <div class="col-md-4">
-        <select name="priority" class="form-select">
-            <option value="">All Priorities</option>
-            <option value="Low" {% if priority == 'Low' %}selected{% endif %}>
-                Low
-            </option>
-            <option value="Medium" {% if priority == 'Medium' %}selected{% endif %}>
-                Medium
-            </option>
-            <option value="High" {% if priority == 'High' %}selected{% endif %}>
-                High
-            </option>
-        </select>
-    </div>
-
-    <div class="col-md-3 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
-            Search
-        </button>
-
-        <a href="{{ url_for('tasks.index') }}"
-           class="btn btn-secondary">
-            Reset
+        <a href="{{ url_for('tasks.create') }}"
+           class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>
+            New Task
         </a>
     </div>
 
-</form>
+    <!-- Statistics -->
+    {% set stats = namespace(high=0) %}
 
+    {% for task in tasks %}
+        {% if task[5] == 'High' %}
+            {% set stats.high = stats.high + 1 %}
+        {% endif %}
+    {% endfor %}
 
+    <div class="row g-3 mb-4">
 
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-label">VISIBLE TASKS</div>
+                <div class="stats-value">{{ tasks|length }}</div>
+            </div>
+        </div>
 
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-label">HIGH PRIORITY</div>
+                <div class="stats-value">{{ stats.high }}</div>
+            </div>
+        </div>
 
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-label">SUBJECTS</div>
+                <div class="stats-value">
+                    {{ tasks|map(attribute=2)|unique|list|length }}
+                </div>
+            </div>
+        </div>
 
+    </div>
 
+    <!-- Filters -->
+    <div class="filter-panel mb-4">
+        <form method="GET"
+              action="{{ url_for('tasks.index') }}"
+              class="row g-3 align-items-center">
+
+            <div class="col-md-5">
+                <input type="text"
+                       name="subject"
+                       class="form-control"
+                       placeholder="Search by subject..."
+                       value="{{ subject }}">
+            </div>
+
+            <div class="col-md-4">
+                <select name="priority" class="form-select">
+                    <option value="">All priorities</option>
+                    <option value="Low" {% if priority == 'Low' %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if priority == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High" {% if priority == 'High' %}selected{% endif %}>High</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-primary flex-fill">
+                    <i class="bi bi-search me-1"></i>
+                    Search
+                </button>
+
+                <a href="{{ url_for('tasks.index') }}"
+                   class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Task List -->
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Subject</th>
-                        <th>Deadline</th>
-                        <th>Priority</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+            <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                <div>
+                    <h5 class="fw-bold mb-1">All Tasks</h5>
+                    <small class="text-muted">
+                        Manage your study schedule
+                    </small>
+                </div>
+            </div>
 
-                <tbody>
-                    {% for task in tasks %}
-                    <tr>
-                        <td>{{ task[0] }}</td>
-                        <td>{{ task[1] }}</td>
-                        <td>{{ task[2] }}</td>
-                        <td>{{ task[4] }}</td>
-                        <td>{{ task[5] }}</td>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
 
-                        <td>
-                            <a href="{{ url_for('tasks.edit', task_id=task[0]) }}"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Task</th>
+                            <th>Subject</th>
+                            <th>Deadline</th>
+                            <th>Priority</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
 
-                            <a href="{{ url_for('tasks.delete', task_id=task[0]) }}"
-                               class="btn btn-danger btn-sm">
-                                Delete
-                            </a>
-                        </td>
-                    </tr>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>
+                                <span class="task-id">
+                                    #{{ task[0] }}
+                                </span>
+                            </td>
 
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">
-                            No tasks found.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                            <td>
+                                <span class="task-title">
+                                    {{ task[1] }}
+                                </span>
+                            </td>
 
-            </table>
+                            <td>{{ task[2] }}</td>
+
+                            <td>
+                                {{ task[4] or 'No deadline' }}
+                            </td>
+
+                            <td>
+                                {% set p = task[5] %}
+
+                                <span class="priority-badge
+                                    {% if p == 'High' %}priority-high
+                                    {% elif p == 'Medium' %}priority-medium
+                                    {% elif p == 'Low' %}priority-low
+                                    {% else %}priority-other{% endif %}">
+                                    {{ p or 'Not set' }}
+                                </span>
+                            </td>
+
+                            <!-- Premium Action Buttons -->
+                            <td>
+                                <div class="task-actions">
+
+                                    <a href="{{ url_for('tasks.details', task_id=task[0]) }}"
+                                       class="premium-btn premium-details">
+                                        <i class="bi bi-eye"></i>
+                                        <span>Details</span>
+                                    </a>
+
+                                    <a href="{{ url_for('tasks.edit', task_id=task[0]) }}"
+                                       class="premium-btn premium-edit">
+                                        <i class="bi bi-pencil-square"></i>
+                                        <span>Edit</span>
+                                    </a>
+
+                                    <a href="{{ url_for('tasks.delete', task_id=task[0]) }}"
+                                       class="premium-btn premium-delete">
+                                        <i class="bi bi-trash3"></i>
+                                        <span>Delete</span>
+                                    </a>
+
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="6"
+                                class="text-center text-muted py-5">
+                                No tasks found. Create your first task!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
 
         </div>
     </div>
@@ -120,3 +221,5 @@
 
 </body>
 </html>
+
+
