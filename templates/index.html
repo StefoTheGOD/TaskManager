@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>TaskManager - Dashboard</title>
 
     <!-- Bootstrap -->
@@ -17,26 +18,111 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.css') }}"
           rel="stylesheet">
+
+    <style>
+        .dashboard-header-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .ai-assistant-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 1px solid #c7c5ff;
+            border-radius: 12px;
+            background: linear-gradient(
+                120deg,
+                #f1efff,
+                #edf4ff,
+                #f8edff
+            );
+            color: #5b4de3;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .ai-assistant-btn:hover {
+            background: linear-gradient(
+                120deg,
+                #e7e3ff,
+                #e2ecff,
+                #f1e2ff
+            );
+            color: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        }
+
+        .ai-assistant-btn i {
+            font-size: 17px;
+        }
+
+        .dashboard-content {
+            animation: dashboardFadeIn 0.45s ease-out;
+        }
+
+        @keyframes dashboardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .dashboard-content {
+                animation: none;
+            }
+
+            .ai-assistant-btn {
+                transition: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container py-5">
+<div class="container py-5 dashboard-content">
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <h1 class="mb-0">My Workspace</h1>
+
             <p class="page-subtitle mb-0">
                 Organize your studies and stay on track.
             </p>
         </div>
 
-        <a href="{{ url_for('tasks.create') }}"
-           class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>
-            New Task
-        </a>
+        <!-- Header Buttons -->
+        <div class="dashboard-header-actions">
+
+            <!-- AI Assistant -->
+            <a href="{{ url_for('ai.assistant') }}"
+               class="ai-assistant-btn">
+                <i class="bi bi-stars"></i>
+                AI Assistant
+            </a>
+
+            <!-- New Task -->
+            <a href="{{ url_for('tasks.create') }}"
+               class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>
+                New Task
+            </a>
+
+        </div>
     </div>
 
     <!-- Statistics -->
@@ -52,21 +138,34 @@
 
         <div class="col-md-4">
             <div class="stats-card">
-                <div class="stats-label">VISIBLE TASKS</div>
-                <div class="stats-value">{{ tasks|length }}</div>
+                <div class="stats-label">
+                    VISIBLE TASKS
+                </div>
+
+                <div class="stats-value">
+                    {{ tasks|length }}
+                </div>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="stats-card">
-                <div class="stats-label">HIGH PRIORITY</div>
-                <div class="stats-value">{{ stats.high }}</div>
+                <div class="stats-label">
+                    HIGH PRIORITY
+                </div>
+
+                <div class="stats-value">
+                    {{ stats.high }}
+                </div>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="stats-card">
-                <div class="stats-label">SUBJECTS</div>
+                <div class="stats-label">
+                    SUBJECTS
+                </div>
+
                 <div class="stats-value">
                     {{ tasks|map(attribute=2)|unique|list|length }}
                 </div>
@@ -77,6 +176,7 @@
 
     <!-- Filters -->
     <div class="filter-panel mb-4">
+
         <form method="GET"
               action="{{ url_for('tasks.index') }}"
               class="row g-3 align-items-center">
@@ -90,15 +190,33 @@
             </div>
 
             <div class="col-md-4">
-                <select name="priority" class="form-select">
-                    <option value="">All priorities</option>
-                    <option value="Low" {% if priority == 'Low' %}selected{% endif %}>Low</option>
-                    <option value="Medium" {% if priority == 'Medium' %}selected{% endif %}>Medium</option>
-                    <option value="High" {% if priority == 'High' %}selected{% endif %}>High</option>
+                <select name="priority"
+                        class="form-select">
+
+                    <option value="">
+                        All priorities
+                    </option>
+
+                    <option value="Low"
+                            {% if priority == 'Low' %}selected{% endif %}>
+                        Low
+                    </option>
+
+                    <option value="Medium"
+                            {% if priority == 'Medium' %}selected{% endif %}>
+                        Medium
+                    </option>
+
+                    <option value="High"
+                            {% if priority == 'High' %}selected{% endif %}>
+                        High
+                    </option>
+
                 </select>
             </div>
 
             <div class="col-md-3 d-flex gap-2">
+
                 <button type="submit"
                         class="btn btn-primary flex-fill">
                     <i class="bi bi-search me-1"></i>
@@ -109,6 +227,7 @@
                    class="btn btn-secondary">
                     Reset
                 </a>
+
             </div>
 
         </form>
@@ -116,18 +235,25 @@
 
     <!-- Task List -->
     <div class="card shadow-sm">
+
         <div class="card-body">
 
             <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+
                 <div>
-                    <h5 class="fw-bold mb-1">All Tasks</h5>
+                    <h5 class="fw-bold mb-1">
+                        All Tasks
+                    </h5>
+
                     <small class="text-muted">
                         Manage your study schedule
                     </small>
                 </div>
+
             </div>
 
             <div class="table-responsive">
+
                 <table class="table table-hover align-middle">
 
                     <thead>
@@ -142,27 +268,38 @@
                     </thead>
 
                     <tbody>
+
                         {% for task in tasks %}
+
                         <tr>
+
+                            <!-- ID -->
                             <td>
                                 <span class="task-id">
                                     #{{ task[0] }}
                                 </span>
                             </td>
 
+                            <!-- Task Title -->
                             <td>
                                 <span class="task-title">
                                     {{ task[1] }}
                                 </span>
                             </td>
 
-                            <td>{{ task[2] }}</td>
+                            <!-- Subject -->
+                            <td>
+                                {{ task[2] }}
+                            </td>
 
+                            <!-- Deadline -->
                             <td>
                                 {{ task[4] or 'No deadline' }}
                             </td>
 
+                            <!-- Priority -->
                             <td>
+
                                 {% set p = task[5] %}
 
                                 <span class="priority-badge
@@ -170,51 +307,73 @@
                                     {% elif p == 'Medium' %}priority-medium
                                     {% elif p == 'Low' %}priority-low
                                     {% else %}priority-other{% endif %}">
+
                                     {{ p or 'Not set' }}
+
                                 </span>
+
                             </td>
 
-                            <!-- Premium Action Buttons -->
+                            <!-- Action Buttons -->
                             <td>
+
                                 <div class="task-actions">
 
+                                    <!-- Details -->
                                     <a href="{{ url_for('tasks.details', task_id=task[0]) }}"
                                        class="premium-btn premium-details">
+
                                         <i class="bi bi-eye"></i>
                                         <span>Details</span>
+
                                     </a>
 
+                                    <!-- Edit -->
                                     <a href="{{ url_for('tasks.edit', task_id=task[0]) }}"
                                        class="premium-btn premium-edit">
+
                                         <i class="bi bi-pencil-square"></i>
                                         <span>Edit</span>
+
                                     </a>
 
+                                    <!-- Delete -->
                                     <a href="{{ url_for('tasks.delete', task_id=task[0]) }}"
                                        class="premium-btn premium-delete">
+
                                         <i class="bi bi-trash3"></i>
                                         <span>Delete</span>
+
                                     </a>
 
                                 </div>
+
                             </td>
 
                         </tr>
 
                         {% else %}
+
                         <tr>
                             <td colspan="6"
                                 class="text-center text-muted py-5">
-                                No tasks found. Create your first task!
+
+                                No tasks found.
+                                Create your first task!
+
                             </td>
                         </tr>
+
                         {% endfor %}
+
                     </tbody>
 
                 </table>
+
             </div>
 
         </div>
+
     </div>
 
 </div>
