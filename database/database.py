@@ -1,11 +1,13 @@
 
 import sqlite3
+
 from pathlib import Path
 from threading import Lock
 from contextlib import contextmanager
 
 
 class Database:
+
     # Singleton Design Pattern
     _instance = None
     _lock = Lock()
@@ -35,14 +37,18 @@ class Database:
         try:
             yield connection
             connection.commit()
+
         except Exception:
             connection.rollback()
             raise
+
         finally:
             connection.close()
 
     def create_table(self):
         with self.get_connection() as connection:
+
+            # Create tasks table
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,9 +56,28 @@ class Database:
                     subject TEXT NOT NULL,
                     description TEXT,
                     deadline TEXT,
-                    priority TEXT
+                    priority TEXT,
+                    status TEXT NOT NULL DEFAULT 'To Do'
                 )
             """)
+
+            # Check existing columns
+            cursor = connection.execute(
+                "PRAGMA table_info(tasks)"
+            )
+
+            columns = [
+                column[1]
+                for column in cursor.fetchall()
+            ]
+
+            # Add status to existing databases
+            if "status" not in columns:
+                connection.execute("""
+                    ALTER TABLE tasks
+                    ADD COLUMN status TEXT NOT NULL
+                    DEFAULT 'To Do'
+                """)
 
     def insert_task(self, task):
         with self.get_connection() as connection:
@@ -87,6 +112,5 @@ class Database:
             """, (priority,))
 
             return cursor.fetchall()
-
 
 

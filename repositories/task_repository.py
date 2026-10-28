@@ -3,7 +3,9 @@ from database.database import Database
 
 
 class TaskRepository:
+
     # Repository Design Pattern
+    VALID_STATUSES = ("To Do", "In Progress", "Completed")
 
     def __init__(self):
         self.db = Database()
@@ -83,6 +85,35 @@ class TaskRepository:
                 parameters
             )
             return cursor.fetchall()
+
+    # Week 5 - Kanban Board
+
+    def get_tasks_by_status(self, status):
+        if status not in self.VALID_STATUSES:
+            raise ValueError("Invalid task status")
+
+        with self.db.get_connection() as connection:
+            cursor = connection.execute("""
+                SELECT *
+                FROM tasks
+                WHERE status = ?
+                ORDER BY id DESC
+            """, (status,))
+
+            return cursor.fetchall()
+
+    def update_task_status(self, task_id, status):
+        if status not in self.VALID_STATUSES:
+            raise ValueError("Invalid task status")
+
+        with self.db.get_connection() as connection:
+            cursor = connection.execute("""
+                UPDATE tasks
+                SET status = ?
+                WHERE id = ?
+            """, (status, task_id))
+
+            return cursor.rowcount > 0
 
 
 
